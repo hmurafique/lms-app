@@ -1,0 +1,125 @@
+version: "3.9"
+
+services:
+  # =======================
+  # Auth Service
+  # =======================
+  auth-service:
+    build: ./backend/auth-service
+    container_name: auth-service
+    ports:
+      - "4001:4001"
+    depends_on:
+      - mongo-auth
+    environment:
+      - PORT=4001
+      - MONGO_URL=mongodb://mongo-auth:27017/authdb
+
+  mongo-auth:
+    image: mongo:6
+    container_name: mongo-auth
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-auth-data:/data/db
+
+  # =======================
+  # Course Service
+  # =======================
+  course-service:
+    build: ./backend/course-service
+    container_name: course-service
+    ports:
+      - "4002:4002"
+    depends_on:
+      - mongo-course
+    environment:
+      - PORT=4002
+      - MONGO_URL=mongodb://mongo-course:27017/coursedb
+
+  mongo-course:
+    image: mongo:6
+    container_name: mongo-course
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-course-data:/data/db
+
+  # =======================
+  # Enrollment Service
+  # =======================
+  enrollment-service:
+    build: ./backend/enrollment-service
+    container_name: enrollment-service
+    ports:
+      - "4003:4003"
+    depends_on:
+      - mongo-enrollment
+    environment:
+      - PORT=4003
+      - MONGO_URL=mongodb://mongo-enrollment:27017/enrollmentdb
+
+  mongo-enrollment:
+    image: mongo:6
+    container_name: mongo-enrollment
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo-enrollment-data:/data/db
+
+  # =======================
+  # Notification Service
+  # =======================
+  notification-service:
+    build: ./backend/notification-service
+    container_name: notification-service
+    ports:
+      - "4004:4004"
+    environment:
+      - PORT=4004
+
+  # =======================
+  # Progress Service
+  # =======================
+  progress-service:
+    build: ./backend/progress-service
+    container_name: progress-service
+    ports:
+      - "4005:4005"
+    depends_on:
+      - mongo-progress
+    environment:
+      - PORT=4005
+      - MONGO_URL=mongodb://mongo-progress:27017/progressdb
+
+  mongo-progress:
+    image: mongo:6
+    container_name: mongo-progress
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongo-progress-data:/data/db
+
+  # =======================
+  # Frontend (React + Nginx)
+  # =======================
+  lms-frontend:
+    build: ./frontend/lms-frontend
+    container_name: lms-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - auth-service
+      - course-service
+      - enrollment-service
+      - notification-service
+      - progress-service
+
+# =======================
+# Volumes
+# =======================
+volumes:
+  mongo-auth-data:
+  mongo-course-data:
+  mongo-enrollment-data:
+  mongo-progress-data:
